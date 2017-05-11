@@ -136,9 +136,9 @@ class makerSpider(scrapy.Spider):
         type = response.xpath(u'//*[contains(text(),"種類：")]/following-sibling::td/text()').\
             extract_first()
         delivery_date = response.xpath(u'//*[contains(text(),"配信開始日：")]/following-sibling::td/text()').\
-            re(r'(\d{4}[\/-]\d{1,2}[\/-]\d{1,2})')
+            extract_first()
         release_date = response.xpath(u'//*[contains(text(),"発売日：")]/following-sibling::td/text()').\
-            re(r'(\d{4}[\/-]\d{1,2}[\/-]\d{1,2})')
+            extract_first()
         duration = response.xpath(u'//*[contains(text(),"収録時間：")]/following-sibling::td/text()'). \
             re(r'^(\d+)')
         performers = response.xpath(u'//*[contains(text(),"出演者：")]/following-sibling::td/span[@id="performer"]/a/@href'). \
@@ -233,7 +233,7 @@ class makerSpider(scrapy.Spider):
     def retrieve_links(self, query):
         # connect to database
         db = MySQLdb.connect(host="localhost",  # your host, usually localhost
-                             user="dmm18",  # your username
+                             user="root",  # your username
                              passwd="666666",  # your password
                              db="dmm18_all",  # name of the data base
                              charset='utf8')  #
