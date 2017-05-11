@@ -11,12 +11,13 @@ class makerSpider(scrapy.Spider):
     countFailure = 0
 
     def start_requests(self):
-        urls = self.retrieve_links("SELECT link from %s.video_links2 where cid not in (select cid from dvds) ORDER BY cid DESC"%self.scheme)# 255334/274552
+        urls = self.retrieve_links("SELECT link from %s.dvd_links where cid not in (select cid from dvds) ORDER BY cid DESC"%self.scheme)# 255334/274552
         len(urls)
         # dvd_test = ['http://www.dmm.co.jp/mono/dvd/-/detail/=/cid=104absd01/',
         #             'http://www.dmm.co.jp/digital/videoa/-/detail/=/cid=sivr00003/',
         #             'http://www.dmm.co.jp/mono/dvd/-/detail/=/cid=tktek091/',
         #             'http://www.dmm.co.jp/mono/dvd/-/detail/=/cid=nnpj231/']
+	#test = ['http://www.dmm.co.jp/mono/dvd/-/detail/=/cid=164sbci009/']
         for url in urls:
             request = scrapy.Request(url=url,callback=self.parse_video_info)
             request.meta['table'] = 'dvd_info'
@@ -135,10 +136,8 @@ class makerSpider(scrapy.Spider):
             extract_first()
         type = response.xpath(u'//*[contains(text(),"種類：")]/following-sibling::td/text()').\
             extract_first()
-        delivery_date = response.xpath(u'//*[contains(text(),"配信開始日：")]/following-sibling::td/text()').\
-            re(r'(\d{4}[\/-]\d{1,2}[\/-]\d{1,2})')
-        release_date = response.xpath(u'//*[contains(text(),"発売日：")]/following-sibling::td/text()').\
-            re(r'(\d{4}[\/-]\d{1,2}[\/-]\d{1,2})')
+        delivery_date = response.xpath(u'//*[contains(text(),"配信開始日：")]/following-sibling::td/text()')
+        release_date = response.xpath(u'//*[contains(text(),"発売日：")]/following-sibling::td/text()')
         duration = response.xpath(u'//*[contains(text(),"収録時間：")]/following-sibling::td/text()'). \
             re(r'^(\d+)')
         performers = response.xpath(u'//*[contains(text(),"出演者：")]/following-sibling::td/span[@id="performer"]/a/@href'). \
@@ -184,16 +183,20 @@ class makerSpider(scrapy.Spider):
             yield request
             #self.find_sample_video_link(response)
 
-	if delivery_date==None or delivery_date=='\n----':
+	if len(delivery_date)==0 or delivery_date=='\n----':
 		delivery_date="0001-01-01"
-	if release_date==None or release_date=='\n----':
+	else:
+	   delivery_date = delivery_date.re(r'(\d{4}[\/-]\d{1,2}[\/-]\d{1,2})')[0]
+	if len(release_date)==0 or release_date=='\n----':
 		release_date="0001-01-01"
+	else:
+	   release_date = release_date.re(r'(\d{4}[\/-]\d{1,2}[\/-]\d{1,2})')[0]
 	if favorite == None:
 		favorite = 0
 	if rate_num == None:
 		rate_num = 0
-	if duration == None:
-		duration = 0
+	if duration == None or len(duration)==0:
+		duration = ['0']
         performers = '|'.join(performers)
         genre = '|'.join(genre)
         duration = '|'.join(duration)
@@ -204,8 +207,9 @@ class makerSpider(scrapy.Spider):
         query = "INSERT INTO %s.dvds(cid,title,favorite,dvd_type,delivery_date,release_date,duration,performers,\
                 director,series,maker,label,genre,vr,identifier,img,reviews,rate,rate_num) \
                 VALUES(\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\',\'%s\')"\
-        %(self.scheme,cid,title,favorite,type,delivery_date,release_date,duration,performers,\
+        %(self.scheme,cid,title.replace("'"," "),favorite,type,delivery_date,release_date,duration,performers,\
                 director,series,maker,label,genre,vr,identifier,img,reviews,rate,rate_num)
+	#print query 
         self.insert_data([query],['DVD %s'%cid])
         query_list = list()
         log_list = list()
