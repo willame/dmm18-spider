@@ -109,7 +109,7 @@ class makerSpider(scrapy.Spider):
     def insert_data(self, query_list, log_list):
         # connect to database
         db = MySQLdb.connect(host="localhost",  # your host, usually localhost
-                                 user="root",  # your username
+                                 user="dmm18",  # your username
                                  passwd="666666",  # your password
                                  db="dmm18_all",  # name of the data base
                                  charset='utf8')  #

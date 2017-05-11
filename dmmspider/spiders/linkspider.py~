@@ -15,7 +15,7 @@ class makerSpider(scrapy.Spider):
        #抓取dvd已发售前10页
 	#抓取动画发售日排序前10页
 	urls = [('http://www.dmm.co.jp/digital/videoa/-/list/=/limit=120/sort=release_date/page=%d/'%i,'video_links2') for i in range(1,11,1)]
-	urls2 = [('http://www.dmm.co.jp/mono/dvd/-/list/=/limit=120/list_type=release/sort=date/page=%d/%i','dvd_links') for i in range(1,11,1) ]
+	urls2 = [('http://www.dmm.co.jp/mono/dvd/-/list/=/limit=120/list_type=release/sort=date/page=%d/'%i,'dvd_links') for i in range(1,11,1) ]
 	urls += urls2
         for url in urls:
             request = scrapy.Request(url=url[0],callback=self.parse_video_links)
